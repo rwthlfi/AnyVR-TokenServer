@@ -13,14 +13,13 @@ async fn main() {
         .and(warp::query::<QueryParams>())
         .map(|params: QueryParams| {
             let token = create_token(&params.room_name, &params.user_name).unwrap();
-            warp::reply::json(&TokenResponse { token })
+            warp::reply::json(&TokenResponse { token, livekit_server_address: env::var("LIVEKIT_SERVER_ADDRESS").unwrap() })
         });
-
     println!("Starting Tokenserver");
-
     warp::serve(create_token_route)
         .run(([0, 0, 0, 0], 3030))
         .await;
+
 }
 
 fn create_token(
@@ -64,4 +63,5 @@ struct QueryParams {
 #[derive(Serialize, Deserialize)]
 struct TokenResponse {
     token: String,
+    livekit_server_address: String,
 }
