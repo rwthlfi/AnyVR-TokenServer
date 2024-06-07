@@ -7,7 +7,7 @@ use rand::distributions::Alphanumeric;
 
 #[tokio::main]
 async fn main() {
-    dotenv::from_filename(".env").ok();
+    dotenv::from_filename(".env").expect("Failed to read .env file");
 
     let create_token_route = warp::path("requestToken")
         .and(warp::query::<QueryParams>())
@@ -15,6 +15,8 @@ async fn main() {
             let token = create_token(&params.room_name, &params.user_name).unwrap();
             warp::reply::json(&TokenResponse { token })
         });
+
+    println!("Starting Tokenserver");
 
     warp::serve(create_token_route)
         .run(([0, 0, 0, 0], 3030))
@@ -39,7 +41,7 @@ fn create_token(
         })
         .to_jwt();
 
-    println!("Token created: name = {}, id = {}, room = {}", &user_name, id, &room_name);
+    println!("Token created: user_name = {}, user_id = {}, room_name = {}", &user_name, id, &room_name);
     return token;
 }
 
