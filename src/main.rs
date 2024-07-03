@@ -9,12 +9,16 @@ use rand::distributions::Alphanumeric;
 async fn main() {
     dotenv::from_filename(".env").expect("Failed to read .env file");
 
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_methods(vec!["GET", "POST"]);
     let create_token_route = warp::path("requestToken")
         .and(warp::query::<QueryParams>())
         .map(|params: QueryParams| {
             let token = create_token(&params.room_name, &params.user_name).unwrap();
             warp::reply::json(&TokenResponse { token, livekit_server_address: env::var("LIVEKIT_SERVER_ADDRESS").unwrap() })
-        });
+        })
+        .with(cors);
     println!("Starting Tokenserver");
     warp::serve(create_token_route)
         .run(([0, 0, 0, 0], 3030))
