@@ -19,7 +19,6 @@ async fn main() {
             let token = create_token(&params.room_name, &params.user_name).unwrap();
             let response = TokenResponse { token, livekit_server_address: env::var("LIVEKIT_SERVER_ADDRESS").unwrap() };
 
-            println!("HTTP Response: {:?}", response.token); // Debug log for HTTP response
             warp::reply::json(&response)
         })
         .with(cors);
