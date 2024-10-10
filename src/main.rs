@@ -4,6 +4,7 @@ use std::env;
 use warp::Filter;
 use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
+use std::net::Ipv6Addr;
 
 #[tokio::main]
 async fn main() {
@@ -16,12 +17,15 @@ async fn main() {
         .and(warp::query::<QueryParams>())
         .map(|params: QueryParams| {
             let token = create_token(&params.room_name, &params.user_name).unwrap();
-            warp::reply::json(&TokenResponse { token, livekit_server_address: env::var("LIVEKIT_SERVER_ADDRESS").unwrap() })
+            let response = TokenResponse { token, livekit_server_address: env::var("LIVEKIT_SERVER_ADDRESS").unwrap() };
+
+            println!("HTTP Response: {:?}", response.token); // Debug log for HTTP response
+            warp::reply::json(&response)
         })
         .with(cors);
     println!("Starting Tokenserver");
     warp::serve(create_token_route)
-        .run(([0, 0, 0, 0], 3030))
+        .run((Ipv6Addr::UNSPECIFIED, 3030))
         .await;
 
 }
