@@ -3,7 +3,7 @@ FROM rust:latest AS builder
 
 WORKDIR /usr/src/tokenserver
 
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
 COPY src ./src
 COPY .env ./
 
