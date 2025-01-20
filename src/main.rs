@@ -1,9 +1,8 @@
 use livekit_api::access_token;
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::net::Ipv6Addr;
+use uuid::Uuid;
 use warp::{path, query, reply, Filter};
 
 #[tokio::main]
@@ -62,9 +61,9 @@ fn create_token(room_name: &str, user_name: &str) -> Result<String, String> {
     let api_key = get_env_var("LIVEKIT_API_KEY");
     let api_secret = get_env_var("LIVEKIT_API_SECRET");
 
-    let user_id = generate_unique_id();
+    let user_id = Uuid::new_v4();
     let token = access_token::AccessToken::with_api_key(&api_key, &api_secret)
-        .with_identity(&user_id)
+        .with_identity(&user_id.to_string())
         .with_name(user_name)
         .with_grants(access_token::VideoGrants {
             room_join: true,
@@ -79,15 +78,6 @@ fn create_token(room_name: &str, user_name: &str) -> Result<String, String> {
     );
 
     token.map_err(|err| format!("Failed to generate token: {}", err))
-}
-
-/// Generates a random, unique user ID.
-fn generate_unique_id() -> String {
-    thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(30)
-        .map(char::from)
-        .collect()
 }
 
 /// Helper function to get environment variables and handle errors gracefully.
