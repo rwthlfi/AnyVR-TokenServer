@@ -19,7 +19,6 @@ async fn main() {
         .with(cors.clone());
 
     let contact_route = path("requestServerIp")
-        .and(query::<QueryParams>())
         .map(handle_request_server_ip)
         .with(cors.clone());
 
@@ -49,7 +48,7 @@ fn handle_create_token(params: QueryParams) -> reply::Json {
 }
 
 /// Handles the request for the server IP address.
-fn handle_request_server_ip(_params: QueryParams) -> reply::Json {
+fn handle_request_server_ip() -> reply::Json {
     let response = ServerResponse {
         fishnet_server_address: env::var("FISHNET_SERVER_ADDRESS").unwrap(),
     };
