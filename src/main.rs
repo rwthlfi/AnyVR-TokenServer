@@ -51,6 +51,7 @@ fn handle_create_token(params: QueryParams) -> reply::Json {
 fn handle_request_server_ip() -> reply::Json {
     let response = ServerResponse {
         fishnet_server_address: env::var("FISHNET_SERVER_ADDRESS").unwrap(),
+        livekit_server_address: env::var("LIVEKIT_SERVER_ADDRESS").unwrap(),
     };
     reply::json(&response)
 }
@@ -90,6 +91,7 @@ struct QueryParams {
 #[derive(Serialize, Deserialize)]
 struct ServerResponse {
     fishnet_server_address: String,
+    livekit_server_address: String,
 }
 
 /// Response structure for token information.
