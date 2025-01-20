@@ -35,7 +35,7 @@ fn handle_create_token(params: QueryParams) -> reply::Json {
         Ok(token) => {
             let response = TokenResponse {
                 token,
-                livekit_server_address: get_env_var("LIVEKIT_SERVER_ADDRESS"),
+                livekit_server_address: env::var("LIVEKIT_SERVER_ADDRESS").unwrap(),
             };
             reply::json(&response)
         }
@@ -49,17 +49,17 @@ fn handle_create_token(params: QueryParams) -> reply::Json {
 }
 
 /// Handles the request for the server IP address.
-fn handle_request_server_ip(params: QueryParams) -> reply::Json {
+fn handle_request_server_ip(_params: QueryParams) -> reply::Json {
     let response = ServerResponse {
-        fishnet_server_address: get_env_var("FISHNET_SERVER_ADDRESS"),
+        fishnet_server_address: env::var("FISHNET_SERVER_ADDRESS").unwrap(),
     };
     reply::json(&response)
 }
 
 /// Creates a token using LiveKit API with given room and user names.
 fn create_token(room_name: &str, user_name: &str) -> Result<String, String> {
-    let api_key = get_env_var("LIVEKIT_API_KEY");
-    let api_secret = get_env_var("LIVEKIT_API_SECRET");
+    let api_key = env::var("LIVEKIT_API_KEY").unwrap();
+    let api_secret = env::var("LIVEKIT_API_SECRET").unwrap();
 
     let user_id = Uuid::new_v4();
     let token = access_token::AccessToken::with_api_key(&api_key, &api_secret)
@@ -78,14 +78,6 @@ fn create_token(room_name: &str, user_name: &str) -> Result<String, String> {
     );
 
     token.map_err(|err| format!("Failed to generate token: {}", err))
-}
-
-/// Helper function to get environment variables and handle errors gracefully.
-fn get_env_var(key: &str) -> String {
-    env::var(key).unwrap_or_else(|_| {
-        eprintln!("Environment variable '{}' is not set", key);
-        String::new()
-    })
 }
 
 /// Struct to deserialize the query parameters from the URL.
