@@ -32,10 +32,7 @@ async fn main() {
 fn handle_create_token(params: QueryParams) -> reply::Json {
     match create_token(&params.room_name, &params.user_name) {
         Ok(token) => {
-            let response = TokenResponse {
-                token,
-                livekit_server_address: env::var("LIVEKIT_SERVER_ADDRESS").unwrap(),
-            };
+            let response = TokenResponse { token };
             reply::json(&response)
         }
         Err(err) => {
@@ -98,7 +95,6 @@ struct ServerResponse {
 #[derive(Serialize, Deserialize)]
 struct TokenResponse {
     token: String,
-    livekit_server_address: String,
 }
 
 /// Generic error response for failed operations.
