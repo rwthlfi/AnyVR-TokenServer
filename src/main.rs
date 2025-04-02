@@ -7,8 +7,6 @@ use warp::{path, query, reply, Filter};
 
 #[tokio::main]
 async fn main() {
-    dotenv::from_filename(".env").expect("Failed to read .env file");
-
     let cors = warp::cors()
         .allow_any_origin()
         .allow_methods(vec!["GET", "POST"]);

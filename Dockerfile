@@ -5,7 +5,6 @@ WORKDIR /usr/src/tokenserver
 
 COPY Cargo.toml ./
 COPY src ./src
-COPY .env ./
 
 RUN cargo build --release
 
@@ -15,7 +14,6 @@ FROM debian:bookworm-slim
 WORKDIR /usr/local/bin
 
 COPY --from=builder /usr/src/tokenserver/target/release/tokenserver .
-COPY --from=builder /usr/src/tokenserver/.env .
 
 EXPOSE 3030
 
