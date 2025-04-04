@@ -13,11 +13,19 @@ async fn main() {
 
     let create_token_route = path("requestToken")
         .and(query::<QueryParams>())
-        .map(handle_create_token)
+        .map(|params: QueryParams| {
+            let response = handle_create_token(params);
+            println!("Sending /requestToken response.");
+            response
+        })
         .with(cors.clone());
 
     let contact_route = path("requestServerIp")
-        .map(handle_request_server_ip)
+        .map(|| {
+            let response = handle_request_server_ip();
+            println!("Sending /request_server_ip response.");
+            response
+        })
         .with(cors.clone());
 
     println!("Starting Tokenserver");
