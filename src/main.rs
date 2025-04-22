@@ -29,8 +29,15 @@ async fn main() {
         .with(cors.clone());
 
     println!("Starting Tokenserver");
+
+    let port = env::var("TOKENSERVER_PORT")
+        .unwrap()
+        .trim()
+        .parse::<u16>()
+        .unwrap();
+
     warp::serve(create_token_route.or(contact_route))
-        .run((Ipv6Addr::UNSPECIFIED, 3030))
+        .run((Ipv6Addr::UNSPECIFIED, port))
         .await;
 }
 
