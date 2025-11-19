@@ -2,7 +2,6 @@ use livekit_api::access_token;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::net::Ipv6Addr;
-use uuid::Uuid;
 use warp::{path, query, reply, Filter};
 
 #[tokio::main]
@@ -43,7 +42,7 @@ async fn main() {
 
 /// Handles the creation of an access token for a user.
 fn handle_create_token(params: QueryParams) -> reply::Json {
-    match create_token(&params.room_name, &params.user_name) {
+    match create_token(&params.room_name, &params.identity) {
         Ok(token) => {
             let response = TokenResponse { token };
             reply::json(&response)
@@ -66,15 +65,13 @@ fn handle_request_server_ip() -> reply::Json {
     reply::json(&response)
 }
 
-/// Creates a token using LiveKit API with given room and user names.
-fn create_token(room_name: &str, user_name: &str) -> Result<String, String> {
+/// Creates a token using LiveKit API with given room and user identity.
+fn create_token(room_name: &str, identity: &str) -> Result<String, String> {
     let api_key = env::var("LIVEKIT_API_KEY").unwrap();
     let api_secret = env::var("LIVEKIT_API_SECRET").unwrap();
 
-    let user_id = Uuid::new_v4();
     let token = access_token::AccessToken::with_api_key(&api_key, &api_secret)
-        .with_identity(&user_id.to_string())
-        .with_name(user_name)
+        .with_identity(identity)
         .with_grants(access_token::VideoGrants {
             room_join: true,
             room: room_name.to_string(),
@@ -83,8 +80,8 @@ fn create_token(room_name: &str, user_name: &str) -> Result<String, String> {
         .to_jwt();
 
     println!(
-        "Token created: user_name = {}, user_id = {}, room_name = {}",
-        user_name, user_id, room_name
+        "Token created: room_name = {}, identity = {}",
+        room_name, identity
     );
 
     token.map_err(|err| format!("Failed to generate token: {}", err))
@@ -94,7 +91,7 @@ fn create_token(room_name: &str, user_name: &str) -> Result<String, String> {
 #[derive(Debug, Deserialize)]
 struct QueryParams {
     room_name: String,
-    user_name: String,
+    identity: String,
 }
 
 /// Response structure for server address.
