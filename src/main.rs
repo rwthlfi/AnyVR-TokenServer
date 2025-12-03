@@ -6,26 +6,20 @@ use warp::{path, query, reply, Filter};
 
 #[tokio::main]
 async fn main() {
-    let cors = warp::cors()
-        .allow_any_origin()
-        .allow_methods(vec!["GET", "POST"]);
-
     let create_token_route = path("requestToken")
         .and(query::<QueryParams>())
         .map(|params: QueryParams| {
             let response = handle_create_token(params);
             println!("Sending /requestToken response.");
             response
-        })
-        .with(cors.clone());
+        });
 
     let contact_route = path("requestServerIp")
         .map(|| {
             let response = handle_request_server_ip();
             println!("Sending /request_server_ip response.");
             response
-        })
-        .with(cors.clone());
+        });
 
     println!("Starting Tokenserver");
 
@@ -35,7 +29,12 @@ async fn main() {
         .parse::<u16>()
         .unwrap();
 
-    warp::serve(create_token_route.or(contact_route))
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_methods(vec!["GET", "POST", "OPTIONS"])
+        .allow_headers(vec!["Content-Type"]);
+
+    warp::serve(create_token_route.or(contact_route).with(cors))
         .run((Ipv6Addr::UNSPECIFIED, port))
         .await;
 }
