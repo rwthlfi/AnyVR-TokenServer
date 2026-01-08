@@ -14,7 +14,11 @@ pub enum TokenError {
 }
 
 #[no_mangle]
-pub extern "C" fn create_token(room: *const c_char, user: *const c_char) -> *mut c_char {
+pub extern "C" fn create_token(
+    room: *const c_char,
+    user_name: *const c_char,
+    user_identity: *const c_char,
+) -> *mut c_char {
     let empty_c_char: *mut i8 = CString::new("").unwrap().into_raw();
 
     if room.is_null() {
@@ -22,16 +26,28 @@ pub extern "C" fn create_token(room: *const c_char, user: *const c_char) -> *mut
         return empty_c_char;
     }
 
-    if user.is_null() {
-        println!("Error: user is a null pointer.");
+    if user_name.is_null() {
+        println!("Error: user_name is a null pointer.");
+        return empty_c_char;
+    }
+
+    if user_identity.is_null() {
+        println!("Error: user_identity is a null pointer.");
         return empty_c_char;
     }
 
     let c_room = unsafe { CStr::from_ptr(room) };
-    let c_user = unsafe { CStr::from_ptr(user) };
+    let c_user_name = unsafe { CStr::from_ptr(user_name) };
+    let c_user_identity = unsafe { CStr::from_ptr(user_identity) };
 
-    let res = match (c_room.to_str(), c_user.to_str()) {
-        (Ok(room), Ok(user)) => create_token_internal(room, user),
+    let res = match (
+        c_room.to_str(),
+        c_user_name.to_str(),
+        c_user_identity.to_str(),
+    ) {
+        (Ok(room), Ok(user_name), Ok(user_identity)) => {
+            create_token_internal(room, user_name, user_identity)
+        }
         _ => Err(TokenError::InvalidParameter),
     };
 
@@ -56,15 +72,19 @@ fn print_err(err: TokenError) {
     }
 }
 
-/// Creates a token using LiveKit API with given room and user identity.
-fn create_token_internal(room_name: &str, identity: &str) -> Result<String, TokenError> {
+fn create_token_internal(
+    room_name: &str,
+    user_name: &str,
+    user_identity: &str,
+) -> Result<String, TokenError> {
     let api_key = env::var(LIVEKIT_API_KEY_ENV)
         .map_err(|_| TokenError::EnvVarNotPresent(LIVEKIT_API_KEY_ENV.to_string()))?;
     let api_secret = env::var(LIVEKIT_API_SECRET_ENV)
         .map_err(|_| TokenError::EnvVarNotPresent(LIVEKIT_API_SECRET_ENV.to_string()))?;
 
     access_token::AccessToken::with_api_key(&api_key, &api_secret)
-        .with_identity(identity)
+        .with_name(user_name)
+        .with_identity(user_identity)
         .with_grants(access_token::VideoGrants {
             room_join: true,
             room: room_name.to_string(),
