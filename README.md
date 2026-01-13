@@ -1,13 +1,28 @@
-# Voicechat-Tokenserver
+# livekit-token-ffi
 
-## Deploy
+A simple dynamic library providing an FFI for generating LiveKit tokens.
+Uses the official [LiveKit Rust SDK](https://github.com/livekit/rust-sdks).
 
-1. Run `cargo build` to build
-2. Configure the .env file 
-3. Put the .env file and the built executable in the same directory before running.
+This library was created to be used in the [AnyVR](https://github.com/rwthlfi/AnyVR) Unity package.
 
-## Docker Alternative
+## Build
 
-1. Configure the .env file
-2. Build the docker image using the provided Dockerfile
-3. Set up the container as usual, exposing port 3030
+```bash
+cargo build --release
+```
+
+## Usage in Unity / AnyVR
+
+The dedicated AnyVR Unity server runs on Linux, so compiling this crate into a Linux library is sufficient.
+
+Import the generated 'liblivekit_tokengen_ffi.so' file into the 'Plugins/Linux' directory and declare an FFI method as follows.
+
+```csharp
+[DllImport("livekit_tokengen_ffi", EntryPoint = "create_token")]
+public static extern string CreateToken(string room, string userName, string userIdentity);
+
+```
+
+The library reads the two environmental variables 'LIVEKIT_API_KEY' and 'LIVEKIT_API_SECRET' which have to be set in the environment of the Unity server process.
+
+The tokens should only be generated on the Unity server, so the library does not have to be linked in the client builds.
